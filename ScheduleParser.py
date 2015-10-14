@@ -9,10 +9,10 @@ def is_class_info(tag):
         return True
 
 def main():
-    conn = sqlite3.connect('schedule.db')
+    conn = sqlite3.connect('classes.db')
     c = conn.cursor()
-    c.execute("""CREATE TABLE schedule
-            (dept text, num text, name text)""")
+    c.execute("DROP TABLE IF EXISTS classes")
+    c.execute("CREATE TABLE IF NOT EXISTS classes (dept TEXT, num TEXT, name TEXT)")
 
     payload = {"p_term": "FL", "p_list_all": "Y"}
     r = requests.get('http://osoc.berkeley.edu/OSOC/osoc', params=payload)
@@ -24,10 +24,19 @@ def main():
 
     for tag in classes:
         if tag != '\n':
-            print(tag.contents[1].string.strip())
-            print(tag.contents[3].string.strip())
-            print(tag.contents[5].string.strip())
-            print('\n')
+            dept = tag.contents[1].string.strip()
+            num = tag.contents[3].string.strip()
+            name = ""
+            if tag.contents[5].string:
+                name = tag.contents[5].string.strip()
+
+            c.execute("INSERT INTO classes ('dept', 'num', 'name') values (?, ?, ?)", (dept, num, name))
+            print(dept, num, name)
+
+
+    c.close()
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
     main()

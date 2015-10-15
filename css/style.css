@@ -1,0 +1,13 @@
+body {
+  background-color: #eee;
+}
+
+h1 {
+  text-align: center;
+  font-size: 48pt;
+  font-family: 'Roboto Condensed', sans-serif;
+}
+
+p {
+  font-family: 'PT Serif';
+}

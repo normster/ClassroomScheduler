@@ -78,7 +78,7 @@ var App = React.createClass({
   }
 });
 
-var mountNode = document.getElementById('app');
+var mountNode = document.getElementById('react-app');
 
 ReactDOM.render(React.createElement(App, null), mountNode);
 

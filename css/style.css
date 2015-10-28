@@ -6,8 +6,21 @@ h1 {
   text-align: center;
   font-size: 48pt;
   font-family: 'Roboto Condensed', sans-serif;
+  margin-bottom: 15px;
 }
 
-p {
+#info {
+  margin-top: 15px;
   font-family: 'PT Serif';
+}
+
+#react-app {
+  font-family: 'PT Serif';
+  font-size: 18pt;
+  border-style: solid;
+  border-color: white;
+  border-width: 5px;
+  padding: 20px;
+  margin-bottom: 15px;
+  margin-top: 15px;
 }

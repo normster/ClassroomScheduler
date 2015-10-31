@@ -1,0 +1,75 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Classroom Scheduler</title>
+  <meta name="description" content="Classroom schedule viewer">
+  <meta name="author" content="Norman">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link href='https://fonts.googleapis.com/css?family=PT+Serif|Roboto+Condensed:700' rel='stylesheet' type='text/css'>
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <div id="page" class="row">
+    <h1 class="col-md-12">IS THIS CLASSROOM TAKEN?</h1>
+    <div class = "col-md-6 col-md-offset-3" id="react-app">
+      <form>
+      <p>Building <br> <input type='text' placeholder="Dwinelle" name='building'/></p>
+      <p>Room <br> <input type='text' placeholder="155" name='room'/></p>
+      <p>Day <br>
+        <select>
+          <option value="m">Monday</option>
+          <option value="tu">Tuesday</option>
+          <option value="w">Wednesday</option>
+          <option value="th">Thursday</option>
+          <option value="f">Friday</option>
+        </select>
+      </p>
+      <p>Time <br>
+        <select>
+          <option value="12">12:00</option>
+          <option value="1230">12:30</option>
+          <option value="1">1:00</option>
+          <option value="130">1:30</option>
+          <option value="2">2:00</option>
+          <option value="230">2:30</option>
+          <option value="3">3:00</option>
+          <option value="330">3:30</option>
+          <option value="4">4:00</option>
+          <option value="430">4:30</option>
+          <option value="5">5:00</option>
+          <option value="530">5:30</option>
+          <option value="6">6:00</option>
+          <option value="630">6:30</option>
+          <option value="7">7:00</option>
+          <option value="730">7:30</option>
+          <option value="8">8:00</option>
+          <option value="830">8:30</option>
+          <option value="9">9:00</option>
+          <option value="930">9:30</option>
+          <option value="10">10:00</option>
+          <option value="1030">10:30</option>
+          <option value="11">11:00</option>
+          <option value="1130">11:30</option>
+        </select>
+        <select>
+          <option value="am">am</option>
+          <option value="pm">pm</option>
+        </select></p>
+      <p><button type='button'>Submit</button></p>
+      </form>
+    </div>
+    <div id="info" class="col-md-6 col-md-offset-3">
+      <p>Built by <a href="http://normanmu.com">Norman</a></p>
+      <p>View on <a href="http://github.com/normster/ClassroomScheduler">Github</a></p>
+    </div>
+  </div>
+</body>
+</html

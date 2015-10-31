@@ -1,4 +1,5 @@
 import requests
+import sqlite3
 
 from bs4 import BeautifulSoup
 
@@ -32,20 +33,45 @@ def get_classes(classes):
 def get_rooms(classes):
     """Takes in the list of tuples, classes, and gets the time/location of each class"""
 
+    conn = sqlite3.connect('locations.db')
+    curs = conn.cursor()
+    curs.execute('DROP TABLES IF EXISTS locations')
+    curs.execute('CREATE TABLE IF NOT EXISTS locations (day TEXT, timeslot TEXT, room TEXT, building TEXT)')
+
     for row in classes:
         payload = {'p_term': 'FL', 'p_dept': row[0], 'p_course': row[1], 'p_title': row[2], 'p_print_flag': 'N', 'p_list_all': 'N'}
         r = requests.post("http://osoc.berkeley.edu/OSOC/osoc", params=payload)
         soup = BeautifulSoup(r.text, "html.parser")
         tables = soup.find_all('table')
-        print(row[2])
         del tables[0] #remove header and footer
         del tables[-1]
 
+        canceled = ['TBA', 'UNSCHED NOFACILITY', 'NO FACILITY', 'CANCELLED', 'UNSCHED INTERNET', 'UNSCHED OFF CAMPUS']
 
         for table in tables:
             elems = table.find_all('td')
             location = elems[6].string
-            print(location)
+            if not location in canceled:
+                parse_location(location, curs)
+
+def parse_location(location, curs):
+    location = location[:location.find('(')]
+    location.strip()
+
+    spl = location.split(' ', 1)
+    day = spl[0]
+    location = spl[1]
+    spl = location.split(',', 1)
+    timeslot = spl[0]
+    location = spl[1]
+    location.strip()
+    spl = location.split(' ', 1)
+    room = spl[0]
+    if room != '':
+        building = spl[1]
+
+        #TODO: finish location parsing and write in to sql database using curs
+
 
 def main():
     classes = []

@@ -1,5 +1,6 @@
 import requests
 import sqlite3
+import re
 
 from bs4 import BeautifulSoup
 
@@ -35,7 +36,7 @@ def get_rooms(classes):
 
     conn = sqlite3.connect('locations.db')
     curs = conn.cursor()
-    curs.execute('DROP TABLES IF EXISTS locations')
+    curs.execute('DROP TABLE IF EXISTS locations')
     curs.execute('CREATE TABLE IF NOT EXISTS locations (day TEXT, timeslot TEXT, room TEXT, building TEXT)')
 
     for row in classes:
@@ -69,6 +70,16 @@ def parse_location(location, curs):
     room = spl[0]
     if room != '':
         building = spl[1]
+        days = re.findall('[A-Z][a-z]*', day)
+        ap = timeslot[-1]
+        start = timeslot[:-1].split('-')[0]
+        end = timeslot[:-1].split('-')[1]
+
+        if start[-2:] == '30':
+
+
+        for d in days:
+            print(d)
 
         #TODO: finish location parsing and write in to sql database using curs
 

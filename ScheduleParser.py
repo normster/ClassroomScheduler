@@ -31,13 +31,8 @@ def get_classes(classes):
 
             classes.append((dept, num, name))
 
-def get_rooms(classes):
+def get_rooms(classes, curs):
     """Takes in the list of tuples, classes, and gets the time/location of each class"""
-
-    conn = sqlite3.connect('locations.db')
-    curs = conn.cursor()
-    curs.execute('DROP TABLE IF EXISTS locations')
-    curs.execute('CREATE TABLE IF NOT EXISTS locations (day TEXT, timeslot TEXT, room TEXT, building TEXT)')
 
     for row in classes:
         payload = {'p_term': 'FL', 'p_dept': row[0], 'p_course': row[1], 'p_title': row[2], 'p_print_flag': 'N', 'p_list_all': 'N'}
@@ -47,17 +42,20 @@ def get_rooms(classes):
         del tables[0] #remove header and footer
         del tables[-1]
 
-        canceled = ['TBA', 'UNSCHED NOFACILITY', 'NO FACILITY', 'CANCELLED', 'UNSCHED INTERNET', 'UNSCHED OFF CAMPUS']
+        cancelled = ['TBA', 'UNSCHED', 'NOFACILITY', 'NO FACILITY', 'CANCELLED', 'INTERNET', 'OFF CAMPUS']
 
         for table in tables:
             elems = table.find_all('td')
             location = elems[6].string
-            if not location in canceled:
+            c = [x in location for x in cancelled]
+            if not True in c:
                 parse_location(location, curs)
 
 def parse_location(location, curs):
-    location = location[:location.find('(')]
-    location.strip()
+    paren = location.find('(')
+    if paren != -1:
+        location = location[:paren]
+    location = location.strip()
 
     spl = location.split(' ', 1)
     day = spl[0]
@@ -65,29 +63,56 @@ def parse_location(location, curs):
     spl = location.split(',', 1)
     timeslot = spl[0]
     location = spl[1]
-    location.strip()
+    location = location.strip()
     spl = location.split(' ', 1)
     room = spl[0]
     if room != '':
         building = spl[1]
         days = re.findall('[A-Z][a-z]*', day)
-        ap = timeslot[-1]
+        pm = False
+        if timeslot[-1] == 'P':
+            pm = True
         start = timeslot[:-1].split('-')[0]
         end = timeslot[:-1].split('-')[1]
-
         if start[-2:] == '30':
+            start = start[:-2]
+            start = int(start)
+            start += .5
+        else:
+            start = int(start)
 
+        if end[-2:] == '30':
+            end = end[:-2]
+            end = int(end)
+            end += .5
+        else:
+            end = int(end)
+
+        cross_noon = False
+        if end < start:
+            cross_noon = True
+
+        if pm and int(end) != 12:
+            end += 12
+            if not cross_noon:
+                start += 12
 
         for d in days:
-            print(d)
-
-        #TODO: finish location parsing and write in to sql database using curs
-
+            s = start
+            e = end
+            while s != e:
+                curs.execute("INSERT INTO locations (day, timeslot, room, building) VALUES (?, ?, ?, ?)", (d, start, room, building))
 
 def main():
-    classes = []
-    get_classes(classes)
-    get_rooms(classes)
+    conn = sqlite3.connect('locations.db')
+    curs = conn.cursor()
+    curs.execute('DROP TABLE IF EXISTS locations')
+    curs.execute('CREATE TABLE IF NOT EXISTS locations (day TEXT, timeslot TEXT, room TEXT, building TEXT)')
+
+    parse_location('M 4-5P,', curs)
+    # classes = []
+    # get_classes(classes)
+    # get_rooms(classes, curs)
 
 if __name__ == "__main__":
     main()

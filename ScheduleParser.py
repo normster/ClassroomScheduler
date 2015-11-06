@@ -67,7 +67,7 @@ def parse_location(location, curs):
     spl = location.split(' ', 1)
     room = spl[0]
     if room != '':
-        building = spl[1]
+        building = spl[1].lower()
         days = re.findall('[A-Z][a-z]*', day)
         pm = False
         if timeslot[-1] == 'P':
@@ -101,7 +101,9 @@ def parse_location(location, curs):
             s = start
             e = end
             while s != e:
-                curs.execute("INSERT INTO locations (day, timeslot, room, building) VALUES (?, ?, ?, ?)", (d, start, room, building))
+                print((d.lower(), str(s), room, building))
+                curs.execute("INSERT INTO locations (day, timeslot, room, building) VALUES (?, ?, ?, ?)", (d.lower(), str(s), room, building))
+                s += .5
 
 def main():
     conn = sqlite3.connect('locations.db')
@@ -109,10 +111,12 @@ def main():
     curs.execute('DROP TABLE IF EXISTS locations')
     curs.execute('CREATE TABLE IF NOT EXISTS locations (day TEXT, timeslot TEXT, room TEXT, building TEXT)')
 
-    parse_location('M 4-5P,', curs)
-    # classes = []
-    # get_classes(classes)
-    # get_rooms(classes, curs)
+    classes = []
+    get_classes(classes)
+    get_rooms(classes, curs)
+
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
     main()

@@ -4,20 +4,19 @@ import re
 
 from bs4 import BeautifulSoup
 
+CANCELLED = {'TBA', 'UNSCHED', 'NOFACILITY', 'NO FACILITY', 'CANCELLED', 'INTERNET', 'OFF CAMPUS'}
+
 def is_class_info(tag):
-    if tag == '\n' or len(tag.contents) != 7:
-        return False
-    else:
-        return True
+    return tag != '\n' and len(tag.contents) == 7
 
-def get_classes(classes):
+def get_classes():
     """Takes in a list, classes, and outputs a tuple (dept, num, name) of all the courses in the schedule"""
-
+    classes = []
     payload = {"p_term": "FL", "p_list_all": "Y"}
     r = requests.get('http://osoc.berkeley.edu/OSOC/osoc', params=payload)
 
     soup = BeautifulSoup(r.text, "html.parser")
-    tbody = soup.find_all(cellspacing=0)[0] #finds the enlosing tbody tag
+    tbody = soup.find_all(cellspacing=0)[0] #finds the enclosing tbody tag
     rows = tbody.find_all(is_class_info)
     del rows[0] #remove header row
 
@@ -25,35 +24,33 @@ def get_classes(classes):
         if tag != '\n':
             dept = tag.contents[1].string.strip()
             num = tag.contents[3].string.strip()
-            name = "" #a few department colloquiums have no name listed, so we set to empty string to avoid NoneType errors
+            name = "" #a few department colloquiums have no name listed
             if tag.contents[5].string:
                 name = tag.contents[5].string.rstrip('. ')
-
             classes.append((dept, num, name))
 
-def get_rooms(classes, curs):
-    """Takes in the list of tuples, classes, and gets the time/location of each class"""
+    return classes
 
-    for row in classes:
-        payload = {'p_term': 'FL', 'p_dept': row[0], 'p_course': row[1], 'p_title': row[2], 'p_print_flag': 'N', 'p_list_all': 'N'}
+def get_rooms(classes, curs):
+    """Takes in the list of tuples of classes and gets the time/location of each class"""
+
+    for dept, num, name in classes:
+        payload = {'p_term': 'FL', 'p_dept': dept, 'p_course': num, 'p_title': name, 'p_print_flag': 'N', 'p_list_all': 'N'}
         r = requests.post("http://osoc.berkeley.edu/OSOC/osoc", params=payload)
         soup = BeautifulSoup(r.text, "html.parser")
         tables = soup.find_all('table')
         del tables[0] #remove header and footer
         del tables[-1]
 
-        cancelled = ['TBA', 'UNSCHED', 'NOFACILITY', 'NO FACILITY', 'CANCELLED', 'INTERNET', 'OFF CAMPUS']
-
         for table in tables:
             elems = table.find_all('td')
             location = elems[6].string
-            c = [x in location for x in cancelled]
-            if not True in c:
-                parse_location(location, curs)
+            if not location in CANCELLED:
+                process_location(location, curs)
 
-def parse_location(location, curs):
+def process_location(location, curs):
     paren = location.find('(')
-    if paren != -1:
+    if paren >= 0:
         location = location[:paren]
     location = location.strip()
 
@@ -111,8 +108,7 @@ def main():
     curs.execute('DROP TABLE IF EXISTS locations')
     curs.execute('CREATE TABLE IF NOT EXISTS locations (day TEXT, timeslot TEXT, room TEXT, building TEXT)')
 
-    classes = []
-    get_classes(classes)
+    classes = get_classes()
     get_rooms(classes, curs)
 
     conn.commit()

@@ -4,3 +4,7 @@ When completed, this tool will manifest as a single page web app where you input
 
 Current Issues:
 Some sort of issue when parsing classes, Flask app not working, Webpage javascript to be written.
+
+UPDATE:
+
+The API endpoint I was using to scrape the schedule and location of classes has been deprecated by the university, with a replacement in the works.
